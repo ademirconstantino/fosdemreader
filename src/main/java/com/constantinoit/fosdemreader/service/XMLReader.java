@@ -9,11 +9,11 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
 
 @Component
 public class XMLReader {
@@ -45,21 +45,12 @@ public class XMLReader {
 
                         // Extract the <abstract> tag content
                         String abstractContent = getTextContent(eventElement, "abstract");
-                        for(String keyword: keywords) {
+                        loop:
+                        for (String keyword : keywords) {
                             if (abstractContent.toLowerCase().contains(keyword.toLowerCase())) {
-                                System.out.println("Keyword found in <abstract>:");
-                                System.out.println("  Abstract: " + abstractContent);
-
-                                // Print additional event details
                                 String eventTitle = getTextContent(eventElement, "title");
                                 String eventDate = getTextContent(eventElement, "date");
-                                System.out.println("  Event Title: " + eventTitle);
-                                System.out.println("  Date: " + eventDate);
-                                System.out.println();
-
-                                result.add(FosdemResponse.builder().event(eventTitle).date(
-                                       inputFormat.parse(eventDate).toString()).
-                                        description(abstractContent).build());
+                                result.add(FosdemResponse.builder().event(eventTitle).dateObj(inputFormat.parse(eventDate)).date(inputFormat.parse(eventDate).toString()).description(abstractContent).build());
                             }
                         }
                     }
@@ -69,6 +60,7 @@ public class XMLReader {
             e.printStackTrace();
         }
 
+        Collections.sort(result);
         return result;
     }
 
